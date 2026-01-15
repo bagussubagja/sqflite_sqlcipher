@@ -127,16 +127,10 @@ class Database {
     }
 
     public static long getThreadId(Thread thread) {
-        // SDK 36 is the minimum supported version
-        // Build.VERSION_CODES.BAKLAVA is Android 36
-        // for when Thread.threadId() is definitely available and getId() is deprecated.
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.BAKLAVA) { // Android 16 (API 36) and above
-            // Use the new, recommended method
-            return thread.threadId();
-        } else {
-            // For older Android versions where threadId() might not be available
-            // and getId() is still the primary way to get a thread ID.
-            // Suppress the deprecation warning for this specific line.
+        try {
+            Method threadIdMethod = Thread.class.getMethod("threadId");
+            return (Long) threadIdMethod.invoke(thread);
+        } catch (Exception e) {
             @SuppressWarnings("deprecation")
             long id = thread.getId();
             return id;
