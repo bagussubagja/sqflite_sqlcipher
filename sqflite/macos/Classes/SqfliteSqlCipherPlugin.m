@@ -648,6 +648,7 @@ static NSInteger _databaseOpenCount = 0;
         return;
     }
 
+    __block bool passwordCheckSucceeded = true;
     [queue inDatabase:^(FMDatabase *database) {
         if (password == nil) {
             [database setKey:@""];
@@ -658,12 +659,22 @@ static NSInteger _databaseOpenCount = 0;
         // Actually query the database in order to check the password is correct
         FMResultSet *s = [database executeQuery:@"SELECT COUNT(*) FROM sqlite_schema"];
         if (s == nil) {
-            result([FlutterError errorWithCode:_sqliteErrorCode
-                                       message:[NSString stringWithFormat:@"%@ %@", _errorOpenFailed, path]
-                                      details:nil]);
+            passwordCheckSucceeded = false;
             return;
         }
+        [s close];
     }];
+    
+    if (!passwordCheckSucceeded) {
+        // Do not register the keyless queue: a single-instance entry would be
+        // handed back (recovered:true) by the hot-restart branch to the next
+        // open of this path, with the key never applied.
+        [queue close];
+        result([FlutterError errorWithCode:_sqliteErrorCode
+                                   message:[NSString stringWithFormat:@"%@ %@", _errorOpenFailed, path]
+                                   details:nil]);
+        return;
+    }
     
     NSNumber* databaseId;
     @synchronized (self.mapLock) {
