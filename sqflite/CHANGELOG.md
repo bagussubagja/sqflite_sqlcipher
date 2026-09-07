@@ -1,3 +1,6 @@
+## 3.4.1
+* (ios/macos) Don't register the database if opening with password fails.
+
 ## 3.4.0
 * Remove deprecation.
 * Update minimum version to Flutter 3.35 to support Android SDK 36.
