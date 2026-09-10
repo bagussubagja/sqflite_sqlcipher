@@ -2,9 +2,9 @@
 
 // Include files differs on iOS and macOS
 #if TARGET_OS_IPHONE
-#import <FMDB/FMDB.h>
+@import FMDB;
 #else
-#import <FMDB/FMDB.h>
+@import FMDB;
 #endif
 
 #import <SQLCipher/sqlite3.h>
